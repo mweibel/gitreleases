@@ -106,7 +106,8 @@ func NewAPIServer(addr, metricsUsername, metricsPassword string, client *GithubC
 		logger:       logger,
 	}
 
-	r.HandleFunc("/gh/{owner}/{repo}/{tag}/{assetName}", as.DownloadRelease)
+	r.Handle("/gh/{owner}/{repo}/{tag}/{assetName}", addRequestMetrics("DownloadRelease",
+		http.HandlerFunc(as.DownloadRelease)))
 	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler()))
 
 	return &as
