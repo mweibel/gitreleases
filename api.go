@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/inconshreveable/log15"
-
 	"github.com/gorilla/mux"
+	"github.com/inconshreveable/log15"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const requestTimeout = 2 * time.Second
@@ -93,6 +93,7 @@ func NewAPIServer(addr string, client *GithubClient, logger log15.Logger) *apiSe
 	}
 
 	r.HandleFunc("/gh/{owner}/{repo}/{tag}/{assetName}", as.DownloadRelease)
+	r.Handle("/metrics", promhttp.Handler())
 
 	return &as
 }
