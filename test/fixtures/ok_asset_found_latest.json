@@ -5,6 +5,13 @@
         "nodes": [
           {
             "releaseAssets": {
+              "totalCount": 0,
+              "nodes": []
+            }
+          },
+          {
+            "releaseAssets": {
+              "totalCount": 1,
               "nodes": [
                 {
                   "downloadUrl": "https://example.com/testing/testing/releases/download/latest/testing.zip"

@@ -33,10 +33,11 @@ type fetchLatestRelease struct {
 		Releases struct {
 			Nodes []struct {
 				ReleaseAssets struct {
-					Nodes releaseAssetNodes
+					TotalCount int
+					Nodes      releaseAssetNodes
 				} `graphql:"releaseAssets(name: $assetName, first:1)"`
 			}
-		} `graphql:"releases(last: 1)"`
+		} `graphql:"releases(first: 5, orderBy: {direction: DESC, field: CREATED_AT})"`
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
@@ -92,10 +93,13 @@ func (gh *GithubClient) fetchLatestRelease(ctx context.Context, owner, repo, ass
 	if len(releases) == 0 {
 		return nil, errReleaseNotFound
 	}
+	for _, node := range releases {
+		if node.ReleaseAssets.TotalCount > 0 {
+			return node.ReleaseAssets.Nodes, nil
+		}
+	}
 
-	assets := releases[0].ReleaseAssets.Nodes
-
-	return assets, nil
+	return nil, errAssetNotFound
 }
 
 func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, assetName string) (releaseAssetNodes, error) {
