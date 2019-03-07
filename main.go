@@ -48,7 +48,7 @@ func getEnv() gitreleasesEnv {
 }
 
 func main() {
-	logger := log.New("module", "gitrelases")
+	logger := log.New("module", "gitrelases/main")
 	// FIXME: change to another format before deployment
 	handler := log.StreamHandler(os.Stdout, log.TerminalFormat())
 	logger.SetHandler(handler)
@@ -58,8 +58,8 @@ func main() {
 	env := getEnv()
 
 	httpClient := NewOauthClient(context.Background(), env.token)
-	client := NewGitHubClient(githubGraphqlEndpoint, httpClient)
-	apiServer := NewAPIServer(env.addr, env.metricsUsername, env.metricsPassword, client, logger)
+	client := NewGitHubClient(githubGraphqlEndpoint, httpClient, logger.New("module", "gitreleases/github"))
+	apiServer := NewAPIServer(env.addr, env.metricsUsername, env.metricsPassword, client, logger.New("module", "gitreleases/api"))
 
 	// Catch SIGINT and SIGTERM.
 	signal.Notify(terminate, syscall.SIGINT, syscall.SIGTERM)
