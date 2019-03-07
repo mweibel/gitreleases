@@ -76,8 +76,22 @@ func writeHTTPError(w http.ResponseWriter, logger log15.Logger, statusCode int, 
 	}
 }
 
+func basicAuth(username, password string, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, pass, _ := r.BasicAuth()
+
+		if username != user || password != pass {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			http.Error(w, "Unauthorized.", http.StatusUnauthorized)
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
 // NewAPIServer encapsulates the start of the gitreleases HTTP server.
-func NewAPIServer(addr string, client *GithubClient, logger log15.Logger) *apiServer {
+func NewAPIServer(addr, metricsUsername, metricsPassword string, client *GithubClient, logger log15.Logger) *apiServer {
 	r := mux.NewRouter()
 
 	as := apiServer{
@@ -93,7 +107,7 @@ func NewAPIServer(addr string, client *GithubClient, logger log15.Logger) *apiSe
 	}
 
 	r.HandleFunc("/gh/{owner}/{repo}/{tag}/{assetName}", as.DownloadRelease)
-	r.Handle("/metrics", promhttp.Handler())
+	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler()))
 
 	return &as
 }
