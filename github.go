@@ -4,19 +4,15 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
-var (
-	errNoReleaseFound = errors.New("github: no release found")
-	errAssetNotFound  = errors.New("github: asset not found")
-)
-
 type GithubClient struct {
-	oauthClient *http.Client
-	client      *githubv4.Client
+	httpClient *http.Client
+	client     *githubv4.Client
 }
 
 type releaseAssetNodes []struct {
@@ -25,7 +21,7 @@ type releaseAssetNodes []struct {
 
 type fetchSpecificTag struct {
 	Repository struct {
-		Release struct {
+		Release *struct {
 			ReleaseAssets struct {
 				Nodes releaseAssetNodes
 			} `graphql:"releaseAssets(name: $assetName, first:1)"`
@@ -44,6 +40,41 @@ type fetchLatestRelease struct {
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 }
 
+type GitHubErrorType int
+
+const (
+	TypeNotFound GitHubErrorType = iota
+	TypeServerError
+)
+
+type GitHubError struct {
+	WrappedError error
+	Type         GitHubErrorType
+}
+
+func (e GitHubError) Error() string {
+	return e.WrappedError.Error()
+}
+
+func NewGitHubError(text string, t GitHubErrorType) GitHubError {
+	return GitHubError{errors.New(text), t}
+}
+
+var (
+	errReleaseNotFound = NewGitHubError("github: no release found", TypeNotFound)
+	errAssetNotFound   = NewGitHubError("github: asset not found", TypeNotFound)
+)
+
+// parseGraphqlError translates between the unfortunately opaque error type of the graphql library and our own.
+// Specific to GitHub errors and possible to fail if GitHub changes the error messages.
+func parseGraphqlError(err error) GitHubError {
+	text := err.Error()
+	if strings.Contains(text, "Could not resolve to") {
+		return GitHubError{err, TypeNotFound}
+	}
+	return GitHubError{err, TypeServerError}
+}
+
 func (gh *GithubClient) fetchLatestRelease(ctx context.Context, owner, repo, assetName string) (releaseAssetNodes, error) {
 	q := fetchLatestRelease{}
 	variables := map[string]interface{}{
@@ -53,15 +84,18 @@ func (gh *GithubClient) fetchLatestRelease(ctx context.Context, owner, repo, ass
 	}
 
 	err := gh.client.Query(ctx, &q, variables)
+	if err != nil {
+		return nil, parseGraphqlError(err)
+	}
 
 	releases := q.Repository.Releases.Nodes
 	if len(releases) == 0 {
-		return nil, errNoReleaseFound
+		return nil, errReleaseNotFound
 	}
 
 	assets := releases[0].ReleaseAssets.Nodes
 
-	return assets, err
+	return assets, nil
 }
 
 func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, assetName string) (releaseAssetNodes, error) {
@@ -74,11 +108,17 @@ func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, 
 	}
 
 	err := gh.client.Query(ctx, &q, variables)
+	if err != nil {
+		return nil, parseGraphqlError(err)
+	}
 
 	release := q.Repository.Release
+	if release == nil {
+		return nil, errReleaseNotFound
+	}
 	assets := release.ReleaseAssets.Nodes
 
-	return assets, err
+	return assets, nil
 }
 
 func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, assetName string) (string, error) {
@@ -89,22 +129,29 @@ func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, a
 	} else {
 		assets, err = gh.fetchSpecificTag(ctx, owner, repo, tag, assetName)
 	}
+	if err != nil {
+		return "", err
+	}
 	if len(assets) == 0 {
 		return "", errAssetNotFound
 	}
 
-	return assets[0].DownloadUrl, err
+	return assets[0].DownloadUrl, nil
 }
 
-func NewGitHubClient(ctx context.Context, token string) *GithubClient {
-	gc := GithubClient{}
-
+func NewOauthClient(ctx context.Context, token string) *http.Client {
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
-	gc.oauthClient = oauth2.NewClient(ctx, src)
+	return oauth2.NewClient(ctx, src)
+}
 
-	gc.client = githubv4.NewClient(gc.oauthClient)
+func NewGitHubClient(url string, httpClient *http.Client) *GithubClient {
+	gc := GithubClient{
+		httpClient: httpClient,
+	}
+
+	gc.client = githubv4.NewEnterpriseClient(url, gc.httpClient)
 
 	return &gc
 }

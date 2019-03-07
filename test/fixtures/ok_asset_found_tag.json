@@ -1,0 +1,15 @@
+{
+  "data": {
+    "repository": {
+      "release": {
+        "releaseAssets": {
+          "nodes": [
+            {
+              "downloadUrl": "https://example.com/testing/testing/releases/download/sometag/testing.zip"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

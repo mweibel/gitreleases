@@ -1,0 +1,15 @@
+{
+  "data": {
+    "repository": {
+      "releases": {
+        "nodes": [
+          {
+            "releaseAssets": {
+              "nodes": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}

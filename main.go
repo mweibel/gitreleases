@@ -11,6 +11,8 @@ import (
 	log "github.com/inconshreveable/log15"
 )
 
+const githubGraphqlEndpoint = "https://api.github.com/graphql"
+
 var (
 	terminate = make(chan os.Signal, 1)
 )
@@ -32,7 +34,8 @@ func main() {
 		panic("GITHUB_TOKEN is required")
 	}
 
-	client := NewGitHubClient(context.Background(), token)
+	httpClient := NewOauthClient(context.Background(), token)
+	client := NewGitHubClient(githubGraphqlEndpoint, httpClient)
 	as := NewAPIServer(addr, client, logger)
 
 	// Catch SIGINT and SIGTERM.

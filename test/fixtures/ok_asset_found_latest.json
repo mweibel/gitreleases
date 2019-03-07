@@ -1,0 +1,19 @@
+{
+  "data": {
+    "repository": {
+      "releases": {
+        "nodes": [
+          {
+            "releaseAssets": {
+              "nodes": [
+                {
+                  "downloadUrl": "https://example.com/testing/testing/releases/download/latest/testing.zip"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

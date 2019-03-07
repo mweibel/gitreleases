@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const requestTimeout = 1 * time.Second
+const requestTimeout = 2 * time.Second
 
 type apiServer struct {
 	server       *http.Server
@@ -36,10 +36,26 @@ func (as *apiServer) DownloadRelease(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	url, err := as.githubClient.FetchReleaseURL(ctx, vars["owner"], vars["repo"], vars["tag"], vars["assetName"])
+	if ctx.Err() != nil {
+		reqLogger.Error("error retrieving release URL", "err", err, "ctx error", ctx.Err())
+		writeHTTPError(w, reqLogger, http.StatusBadGateway, "Bad Gateway")
+		return
+	}
 	if err != nil {
+		switch t := err.(type) {
+		case GitHubError:
+			if t.Type == TypeNotFound {
+				reqLogger.Info("data not found", "err", t.WrappedError, vars)
+				writeHTTPError(w, reqLogger, http.StatusNotFound, t.WrappedError.Error())
+				return
+			} else {
+				reqLogger.Error("unhandled github error", "err", t.WrappedError, "vars", vars)
+				writeHTTPError(w, reqLogger, http.StatusInternalServerError, "Internal Server Error")
+				return
+			}
+		}
 		reqLogger.Error("error retrieving release URL", "err", err)
-		w.WriteHeader(http.StatusBadGateway)
-		fmt.Fprintln(w, "Unexpected error calling GitHub")
+		writeHTTPError(w, reqLogger, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -47,6 +63,13 @@ func (as *apiServer) DownloadRelease(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Location", url)
 	w.WriteHeader(http.StatusMovedPermanently)
+}
+
+func writeHTTPError(w http.ResponseWriter, logger log15.Logger, statusCode int, message string) {
+	w.WriteHeader(statusCode)
+	if _, err := fmt.Fprintln(w, message); err != nil {
+		logger.Crit("error writing response", "err", err)
+	}
 }
 
 func NewAPIServer(addr string, client *GithubClient, logger log15.Logger) *apiServer {
@@ -64,7 +87,7 @@ func NewAPIServer(addr string, client *GithubClient, logger log15.Logger) *apiSe
 		logger:       logger,
 	}
 
-	r.HandleFunc("/d/{owner}/{repo}/{tag}/{assetName}", as.DownloadRelease)
+	r.HandleFunc("/gh/{owner}/{repo}/{tag}/{assetName}", as.DownloadRelease)
 
 	return &as
 }
