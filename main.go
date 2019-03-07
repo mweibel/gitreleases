@@ -36,13 +36,13 @@ func main() {
 
 	httpClient := NewOauthClient(context.Background(), token)
 	client := NewGitHubClient(githubGraphqlEndpoint, httpClient)
-	as := NewAPIServer(addr, client, logger)
+	apiServer := NewAPIServer(addr, client, logger)
 
 	// Catch SIGINT and SIGTERM.
 	signal.Notify(terminate, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		err := as.Start()
+		err := apiServer.Start()
 		if err == http.ErrServerClosed {
 			logger.Info("server closed")
 		} else {
@@ -63,7 +63,7 @@ func main() {
 	// current messages being handled.
 	grace, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
-	err := as.Shutdown(grace)
+	err := apiServer.Shutdown(grace)
 	if err != nil {
 		logger.Info("server shutdown with problems", "err", err)
 	} else {

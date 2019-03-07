@@ -125,6 +125,7 @@ func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, 
 	return assets, nil
 }
 
+// FetchReleaseURL decides based on the supplied `tag` which GraphQL query is executed.
 func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, assetName string) (string, error) {
 	var assets releaseAssetNodes
 	var err error
@@ -143,6 +144,7 @@ func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, a
 	return assets[0].DownloadUrl, nil
 }
 
+// NewOauthClient creates an oauth2 client with a static token source to use with GitHub's personal access tokens.
 func NewOauthClient(ctx context.Context, token string) *http.Client {
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -150,6 +152,9 @@ func NewOauthClient(ctx context.Context, token string) *http.Client {
 	return oauth2.NewClient(ctx, src)
 }
 
+// NewGitHubClient creates a GithubClient "enterprise" instance using an established oauth2 HTTP client.
+//
+// The url and httpClient are parameters mainly for proper testing purposes.
 func NewGitHubClient(url string, httpClient *http.Client) *GithubClient {
 	gc := GithubClient{
 		httpClient: httpClient,

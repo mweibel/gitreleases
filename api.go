@@ -20,13 +20,17 @@ type apiServer struct {
 	logger       log15.Logger
 }
 
+// Start is starting the HTTP server.
 func (as *apiServer) Start() error {
 	return as.server.ListenAndServe()
 }
+
+// Shutdown stops the HTTP server, possibly gracefully if an according context is provided.
 func (as *apiServer) Shutdown(ctx context.Context) error {
 	return as.server.Shutdown(ctx)
 }
 
+// DownloadRelease fetches a release from GitHub according to parameters specified.
 func (as *apiServer) DownloadRelease(w http.ResponseWriter, r *http.Request) {
 	reqLogger := as.logger.New("method", r.Method, "url", r.RequestURI)
 	reqLogger.Info("fetching release URL")
@@ -72,6 +76,7 @@ func writeHTTPError(w http.ResponseWriter, logger log15.Logger, statusCode int, 
 	}
 }
 
+// NewAPIServer encapsulates the start of the gitreleases HTTP server.
 func NewAPIServer(addr string, client *GithubClient, logger log15.Logger) *apiServer {
 	r := mux.NewRouter()
 
