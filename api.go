@@ -49,7 +49,7 @@ func (as *apiServer) DownloadRelease(w http.ResponseWriter, r *http.Request) {
 		switch t := err.(type) {
 		case GitHubError:
 			if t.Type == TypeNotFound {
-				reqLogger.Info("data not found", "err", t.WrappedError, vars)
+				reqLogger.Info("data not found", "err", t.WrappedError, "vars", vars)
 				writeHTTPError(w, reqLogger, http.StatusNotFound, t.WrappedError.Error())
 				return
 			} else {
@@ -58,7 +58,7 @@ func (as *apiServer) DownloadRelease(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		reqLogger.Error("error retrieving release URL", "err", err)
+		reqLogger.Error("error retrieving release URL", "err", err, "vars", vars)
 		writeHTTPError(w, reqLogger, http.StatusInternalServerError, err.Error())
 		return
 	}
