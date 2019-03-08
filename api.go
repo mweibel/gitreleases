@@ -96,8 +96,10 @@ func writeHTTPError(w http.ResponseWriter, logger log.Logger, statusCode int, me
 	}
 }
 
-func basicAuth(username, password string, h http.Handler) http.Handler {
+func basicAuth(username, password string, h http.Handler, logger log.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqLogger := logger.New("method", r.Method, "url", r.RequestURI)
+		reqLogger.Info("request to restricted page", "host", r.Host, "user-agent", r.UserAgent(), "headers", r.Header)
 		user, pass, _ := r.BasicAuth()
 
 		if username != user || password != pass {
@@ -129,7 +131,7 @@ func NewAPIServer(addr, metricsUsername, metricsPassword, version string, client
 
 	r.Handle("/gh/{owner}/{repo}/{tag}/{assetName}", addRequestMetrics("DownloadRelease",
 		http.HandlerFunc(as.DownloadRelease)))
-	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler()))
+	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler(), logger))
 	r.HandleFunc("/status", as.Status)
 
 	return &as

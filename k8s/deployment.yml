@@ -18,7 +18,7 @@ spec:
       annotations:
         ad.datadoghq.com/gitreleases.check_names: '["gitreleases"]'
         ad.datadoghq.com/gitreleases.init_configs: '[{}]'
-        ad.datadoghq.com/gitreleases.instances: '[{"prometheus_url": "http://%%env_METRICS_USERNAME%%:%%env_METRICS_PASSWORD%%@%%host%%:8080/metrics","namespace": "gitreleases","metrics": ["api_requests_*","go_*","in_flight_requests","process_*","promhttp_*","request_duration_*","response_size_*"]}]'
+        ad.datadoghq.com/gitreleases.instances: '[{"prometheus_url": "http://%%env_METRICS_USERNAME%%:%%env_METRICS_PASSWORD%%@%%host%%:%%port%%/metrics","namespace": "gitreleases","metrics": ["api_requests_*","go_*","in_flight_requests","process_*","promhttp_*","request_duration_*","response_size_*"]}]'
     spec:
       imagePullSecrets:
         - name: gitlab-auth
