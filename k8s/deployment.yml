@@ -1,0 +1,79 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: gitreleases-{{TAG}}
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: gitreleases
+        version: {{TAG}}
+    spec:
+      imagePullSecrets:
+        - name: gitlab-auth
+      containers:
+        - name: gitreleases
+          image: registry.gitlab.com/mweibel/gitreleases:{{TAG}}
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          env:
+            - name: LISTEN_ADDR
+              value: ":8080"
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: gitreleases-secret
+                  key: githubToken
+            - name: METRICS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gitreleases-secret
+                  key: metricsUsername
+            - name: METRICS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gitreleases-secret
+                  key: metricsPassword
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: gitreleases
+    version: {{TAG}}
+  name: gitreleases
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: gitreleases
+    version: {{TAG}}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gitreleases
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+    - hosts:
+      - gitreleases.dev
+      secretName: gitreleases-tls
+  rules:
+    - host: gitreleases.dev
+      http:
+        paths:
+          - backend:
+              serviceName: gitreleases
+              servicePort: http

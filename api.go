@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/inconshreveable/log15"
+	log "github.com/inconshreveable/log15"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -17,7 +18,8 @@ type apiServer struct {
 	server       *http.Server
 	router       *mux.Router
 	githubClient *GithubClient
-	logger       log15.Logger
+	logger       log.Logger
+	version      string
 }
 
 // Start is starting the HTTP server.
@@ -69,7 +71,25 @@ func (as *apiServer) DownloadRelease(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMovedPermanently)
 }
 
-func writeHTTPError(w http.ResponseWriter, logger log15.Logger, statusCode int, message string) {
+func (as *apiServer) Status(w http.ResponseWriter, r *http.Request) {
+	reqLogger := as.logger.New("method", r.Method, "url", r.RequestURI)
+
+	out := struct {
+		Version string `json:"version"`
+	}{
+		Version: version,
+	}
+	encoder := json.NewEncoder(w)
+
+	w.WriteHeader(http.StatusOK)
+
+	err := encoder.Encode(&out)
+	if err != nil {
+		reqLogger.Error("error encoding json", "err", err)
+	}
+}
+
+func writeHTTPError(w http.ResponseWriter, logger log.Logger, statusCode int, message string) {
 	w.WriteHeader(statusCode)
 	if _, err := fmt.Fprintln(w, message); err != nil {
 		logger.Crit("error writing response", "err", err)
@@ -91,7 +111,7 @@ func basicAuth(username, password string, h http.Handler) http.Handler {
 }
 
 // NewAPIServer encapsulates the start of the gitreleases HTTP server.
-func NewAPIServer(addr, metricsUsername, metricsPassword string, client *GithubClient, logger log15.Logger) *apiServer {
+func NewAPIServer(addr, metricsUsername, metricsPassword, version string, client *GithubClient, logger log.Logger) *apiServer {
 	r := mux.NewRouter()
 
 	as := apiServer{
@@ -104,11 +124,13 @@ func NewAPIServer(addr, metricsUsername, metricsPassword string, client *GithubC
 		},
 		githubClient: client,
 		logger:       logger,
+		version:      version,
 	}
 
 	r.Handle("/gh/{owner}/{repo}/{tag}/{assetName}", addRequestMetrics("DownloadRelease",
 		http.HandlerFunc(as.DownloadRelease)))
 	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler()))
+	r.HandleFunc("/status", as.Status)
 
 	return &as
 }

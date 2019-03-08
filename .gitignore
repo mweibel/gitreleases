@@ -10,3 +10,9 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# ignore secrets
+/k8s/secret.yml
+
+# built binary
+gitreleases

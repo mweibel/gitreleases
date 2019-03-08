@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/inconshreveable/log15"
+	log "github.com/inconshreveable/log15"
 
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
@@ -16,7 +16,7 @@ import (
 type GithubClient struct {
 	httpClient *http.Client
 	client     *githubv4.Client
-	logger     log15.Logger
+	logger     log.Logger
 }
 
 type rateLimit struct {
@@ -177,7 +177,7 @@ func NewOauthClient(ctx context.Context, token string) *http.Client {
 // NewGitHubClient creates a GithubClient "enterprise" instance using an established oauth2 HTTP client.
 //
 // The url and httpClient are parameters mainly for proper testing purposes.
-func NewGitHubClient(url string, httpClient *http.Client, logger log15.Logger) *GithubClient {
+func NewGitHubClient(url string, httpClient *http.Client, logger log.Logger) *GithubClient {
 	gc := GithubClient{
 		httpClient: httpClient,
 		logger:     logger,
