@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      🚀 gitreleases - The missing link to your latest GitHub release asset
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="tachyons.min.css" />
+    <style>
+      :root {
+        --clr-primary: #4c93dc;
+        --clr-light-accent: #a3cae5;
+        --clr-light-shades: #f8f8f9;
+        --clr-dark-accent: #a179aa;
+        --clr-dark-shades: #3c3839;
+      }
+      .bg-light-accent {
+        background-color: var(--clr-light-accent);
+      }
+      .bg-light-shades {
+        background-color: var(--clr-light-shades);
+      }
+      .bg-dark-accent {
+        background-color: var(--clr-dark-accent);
+      }
+      .bg-dark-shades {
+        background-color: var(--clr-dark-shades);
+      }
+      .dark-shades {
+        color: var(--clr-dark-shades);
+      }
+      .light-shades {
+        color: var(--clr-light-shades);
+      }
+      .primary {
+        color: var(--clr-primary);
+      }
+      .hover-dark-accent:hover {
+        color: var(--clr-dark-accent);
+      }
+    </style>
+  </head>
+  <body class="vh-100 w-100 helvetica bg-light-shades flex flex-column dark-shades">
+    <div class="mw6 mw8-ns center ph5-ns flex-auto flex-shrink-0">
+      <header class="mb4">
+        <h1 class="fw2 f1 lh-solid primary mb0">
+          <a href="https://gitreleases.dev" class="no-underline color-inherit hover-dark-accent">
+            🚀 gitreleases
+          </a>
+          <a
+            class="github-button dn"
+            href="https://github.com/mweibel/gitreleases"
+            data-size="large"
+            data-show-count="true"
+            aria-label="Star mweibel/gitreleases on GitHub"
+            >Star</a
+          >
+        </h1>
+        <h2 class="fw1 f3 primary">
+          The missing link to your latest GitHub release asset
+        </h2>
+      </header>
+      <main>
+        <p>
+          gitreleases allows you to directly link to the release assets of your latest release on GitHub.
+        </p>
+        <form class="gh-releases-search">
+          <input
+            type="text"
+            placeholder="organization"
+            value="rokka-io"
+            class="input-organization bg-livid ba b--dark-imperial-blue pa2 br1"
+            autocomplete="off"
+          />
+          <input
+            type="text"
+            placeholder="repo"
+            value="rokka-go"
+            class="input-repo bg-livid ba b--dark-imperial-blue pa2 br1"
+            autocomplete="off"
+          />
+          <input
+            type="submit"
+            value="Search"
+            class="bg-livid ba b--dark-imperial-blue pa2 br1"
+          />
+        </form>
+        <ul class="gh-releases-results"></ul>
+      </main>
+      <section>
+        <div class="bg-dark-shades pa2">
+          <p class="light-shades">Turns this:</p>
+          <code class="code db bg-light-accent pa4 mv2">
+            curl -sL https://api.github.com/repos/<span class="gh-organization"
+          >rokka-io</span
+          >/<span class="gh-repo">rokka-go</span>/releases/latest | jq -r
+            '.assets[].browser_download_url'
+          </code>
+        </div>
+        <p>Into this:</p>
+        <a
+          href="/gh/rokka-io/rokka-go/latest/rokka_linux.zip"
+          class="gitreleases-link primary no-underline underline-hover"
+          rel="noopener"
+        >
+          https://gitreleases.dev/gh/<span class="gh-organization"
+            >rokka-io</span
+          >/<span class="gh-repo">rokka-go</span>/latest/<span
+            class="gh-filename"
+            >rokka_linux.zip</span
+          >
+        </a>
+      </section>
+    </div>
+    <footer
+      class="mt5-ns mt3 pb5 bg-dark-accent light-shades pa4 flex-shrink-0"
+    >
+      <div class="mw6 mw8-ns center ph5-ns">
+        gitreleases with ❤️ by
+        <a
+          href="https://twitter.com/weibelm"
+          class="no-underline light-shades"
+          rel="noopener nofollow"
+          >@weibelm</a
+        >
+      </div>
+    </footer>
+    <script async defer src="script.js"></script>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+  </body>
+</html>
