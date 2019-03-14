@@ -1,0 +1,37 @@
+:root {
+  --clr-primary: #4c93dc;
+  --clr-light-accent: #a3cae5;
+  --clr-light-shades: #f8f8f9;
+  --clr-dark-accent: #a179aa;
+  --clr-dark-shades: #3c3839;
+}
+.bg-light-accent {
+  background-color: var(--clr-light-accent);
+}
+.bg-light-shades {
+  background-color: var(--clr-light-shades);
+}
+.bg-dark-accent {
+  background-color: var(--clr-dark-accent);
+}
+.bg-dark-shades {
+  background-color: var(--clr-dark-shades);
+}
+.dark-shades {
+  color: var(--clr-dark-shades);
+}
+.light-shades {
+  color: var(--clr-light-shades);
+}
+.light-accent {
+  color: var(--clr-light-accent);
+}
+.primary {
+  color: var(--clr-primary);
+}
+.hover-dark-accent:hover {
+  color: var(--clr-dark-accent);
+}
+.hover-dark-shades:hover {
+  color: var(--clr-dark-shades);
+}

@@ -5,15 +5,14 @@ function updateText(elements, text) {
 }
 function updateGitreleasesLink(elements, organization, repo, filename) {
   elements.forEach(function(el) {
-    console.log(el, `/gh/${organization}/${repo}/latest/${filename}`);
     el.setAttribute("href", `/gh/${organization}/${repo}/latest/${filename}`);
   });
 }
 
 function clearResults(resultsEl) {
-  resultsEl.childNodes.forEach(function(node) {
-    node.remove();
-  });
+  while (resultsEl.firstChild) {
+    resultsEl.removeChild(resultsEl.firstChild);
+  }
 }
 
 function filterReleases(response) {
@@ -22,18 +21,40 @@ function filterReleases(response) {
   });
 }
 
+function createGitreleasesLink (path) {
+  const a = document.createElement('a')
+  a.className = 'primary no-underline underline-hover'
+  a.setAttribute('rel', 'noopener')
+  a.setAttribute('href', path)
+  a.appendChild(document.createTextNode(`gitreleases.dev${path}`))
+  return a
+}
+
+function setButtonLoading(btn) {
+  btn.className += ' gray'
+  btn.setAttribute('disabled', true)
+  btn.value = 'Loading...'
+}
+function resetButton(btn) {
+  btn.classList.remove('gray')
+  btn.removeAttribute('disabled');
+  btn.value = 'Search'
+}
+
 function onDocumentLoad() {
   const inputOrganization = document.querySelector(".input-organization");
   const inputRepo = document.querySelector(".input-repo");
+  const inputSubmit = document.querySelector('.input-submit');
   const ghOrganizations = document.querySelectorAll(".gh-organization");
   const ghRepo = document.querySelectorAll(".gh-repo");
   const ghFilename = document.querySelectorAll(".gh-filename");
-  const gitreleasesLink = document.querySelectorAll(".gitreleases-link");
   const ghReleasesSearch = document.querySelector(".gh-releases-search");
   const ghReleasesResult = document.querySelector(".gh-releases-results");
 
   ghReleasesSearch.addEventListener("submit", function(event) {
     event.preventDefault();
+
+    setButtonLoading(inputSubmit)
 
     const organization = inputOrganization.value;
     const repo = inputRepo.value;
@@ -60,35 +81,21 @@ function onDocumentLoad() {
         if (!assets || !assets.length) {
           return Promise.reject(new Error("No asset found"));
         }
-        if (assets.length === 1) {
-          updateGitreleasesLink(
-            gitreleasesLink,
-            organization,
-            repo,
-            assets[0].name
-          );
-          return;
-        }
 
         clearResults(ghReleasesResult);
 
         assets.slice(0, 5).forEach(function(asset) {
+          const path = `/gh/${organization}/${repo}/latest/${asset.name}`
           const li = document.createElement("li");
-          li.appendChild(document.createTextNode(asset.name));
-          ghReleasesResult.appendChild(li);
+          li.className = 'pb2';
+          li.appendChild(createGitreleasesLink(path))
 
-          li.addEventListener("mouseover", function() {
-            updateText(ghFilename, asset.name);
-            updateGitreleasesLink(
-              gitreleasesLink,
-              organization,
-              repo,
-              asset.name
-            );
-          });
+          ghReleasesResult.appendChild(li);
         });
+        resetButton(inputSubmit)
       })
       .catch(function(error) {
+        resetButton(inputSubmit)
         clearResults(ghReleasesResult);
 
         const message = error.statusText || error.message;

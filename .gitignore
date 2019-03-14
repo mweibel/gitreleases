@@ -16,3 +16,10 @@
 
 # built binary
 gitreleases
+
+# built landingpage assetes
+landingpage/style.css
+landingpage/style.*.css
+
+# node
+node_modules/
