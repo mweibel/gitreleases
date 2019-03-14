@@ -3,6 +3,7 @@ function updateText(elements, text) {
     el.innerText = text;
   });
 }
+
 function updateGitreleasesLink(elements, organization, repo, filename) {
   elements.forEach(function(el) {
     el.setAttribute("href", `/gh/${organization}/${repo}/latest/${filename}`);

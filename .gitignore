@@ -18,8 +18,7 @@
 gitreleases
 
 # built landingpage assetes
-landingpage/style.css
-landingpage/style.*.css
+public/
 statik/
 
 # node

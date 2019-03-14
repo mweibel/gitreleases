@@ -1,4 +1,4 @@
-//go:generate statik -src=./landingpage
+//go:generate statik -src=./public
 
 package main
 
