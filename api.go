@@ -10,6 +10,9 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/inconshreveable/log15"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rakyll/statik/fs"
+
+	_ "github.com/mweibel/gitreleases/statik"
 )
 
 const requestTimeout = 2 * time.Second
@@ -128,9 +131,16 @@ func NewAPIServer(addr, metricsUsername, metricsPassword, version string, client
 	}
 
 	r.Handle("/gh/{owner}/{repo}/{tag}/{assetName}", addRequestMetrics("DownloadRelease",
-		http.HandlerFunc(as.DownloadRelease)))
-	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler()))
-	r.HandleFunc("/status", as.Status)
+		http.HandlerFunc(as.DownloadRelease))).Methods(http.MethodGet)
+	r.Handle("/metrics", basicAuth(metricsUsername, metricsPassword, promhttp.Handler())).Methods(http.MethodGet)
+	r.HandleFunc("/status", as.Status).Methods(http.MethodGet)
+
+	statikFS, err := fs.New()
+	if err != nil {
+		panic(err)
+	}
+
+	r.PathPrefix("/").Methods(http.MethodGet).Handler(addRequestMetrics("StaticAssets", http.StripPrefix("/", http.FileServer(statikFS))))
 
 	return &as
 }

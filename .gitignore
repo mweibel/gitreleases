@@ -20,6 +20,7 @@ gitreleases
 # built landingpage assetes
 landingpage/style.css
 landingpage/style.*.css
+statik/
 
 # node
 node_modules/

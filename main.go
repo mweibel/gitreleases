@@ -1,3 +1,5 @@
+//go:generate statik -src=./landingpage
+
 package main
 
 import (

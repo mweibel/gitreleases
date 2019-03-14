@@ -1,12 +1,15 @@
 TAG?=$(shell git rev-parse --short=8 HEAD)
 export TAG
 
-test:
-	go test ./...
 install:
 	npm install --no-package-lock postcss-cli purgecss cssnano autoprefixer
+
+test:
+	go test ./...
 build:
+	go generate
 	go build -ldflags "-X main.version=$(TAG)" -o gitreleases .
+
 pack:
 	docker build -t registry.gitlab.com/mweibel/gitreleases:$(TAG) .
 push:
