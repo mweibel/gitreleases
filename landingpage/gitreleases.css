@@ -17,6 +17,9 @@
 .bg-dark-shades {
   background-color: var(--clr-dark-shades);
 }
+.dark-accent {
+  color: var(--clr-dark-accent);
+}
 .dark-shades {
   color: var(--clr-dark-shades);
 }
@@ -34,4 +37,11 @@
 }
 .hover-dark-shades:hover {
   color: var(--clr-dark-shades);
+}
+.b--dark-shades {
+  border-color: var(--clr-dark-shades);
+}
+
+.wb-bw {
+  word-break: break-word;
 }

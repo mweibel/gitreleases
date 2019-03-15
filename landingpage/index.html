@@ -3,17 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <title>
-      🚀 gitreleases - The missing link to your latest GitHub release asset
+      🚀 Git Releases - The missing link to your latest GitHub release asset
     </title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.min.css" />
   </head>
-  <body class="vh-100 w-100 helvetica bg-light-shades flex flex-column dark-shades">
-    <div class="w-100 w-80-l ph2 center ph5-l flex-auto flex-shrink-0">
+  <body
+    class="vh-100 w-100 helvetica bg-light-shades flex flex-column dark-shades"
+  >
+    <div class="w-100 w-80-l mb2-ns mb1 ph2 center ph5-l flex-auto overflow-y-scroll">
       <header class="mb4">
-        <h1 class="fw5 f2 f1-l lh-solid primary mb0">
-          <a href="https://gitreleases.dev" class="no-underline color-inherit hover-dark-accent">
-            🚀 gitreleases
+        <h1 class="fw5 f2 f1-l lh-solid dark-shades mb0">
+          <a
+            href="https://gitreleases.dev"
+            class="no-underline color-inherit hover-dark-accent"
+          >
+            🚀 Git Releases
           </a>
           <a
             class="github-button dn"
@@ -24,34 +29,35 @@
             >Star</a
           >
         </h1>
-        <h2 class="fw3 f3-l f4 primary">
+        <h2 class="fw3 f3-l f4 dark-shades">
           The missing link to your latest GitHub release asset
         </h2>
       </header>
       <main>
         <p>
-          gitreleases allows you to directly link to the assets of your latest release on GitHub.
+          Git Releases allows you to directly link to the assets of your latest
+          release on GitHub.
         </p>
         <h3>Enter a GitHub repo</h3>
-        <form class="gh-releases-search">
+        <form class="gh-releases-search w-100">
           <input
             type="text"
-            placeholder="organization"
+            placeholder="organization / owner"
             value="rokka-io"
-            class="input-organization bg-livid ba b--dark-imperial-blue pa2 br1"
+            class="input-organization input-reset bg-livid ba b--silver bg-light-shades pa2 w-100 w-30-m w-30-l mb1 mb0-m"
             autocomplete="off"
           />
           <input
             type="text"
             placeholder="repo"
             value="rokka-go"
-            class="input-repo bg-livid ba b--dark-imperial-blue pa2 br1"
+            class="input-repo bg-livid input-reset ba b--silver bg-light-shades pa2 w-100 w-30-m w-30-l mb1 mb0-m"
             autocomplete="off"
           />
           <input
             type="submit"
             value="Search"
-            class="input-submit bg-livid ba b--dark-imperial-blue pa2 br1"
+            class="input-submit input-reset bg-livid ba b--silver bg-light-gray pa2 w-100 w-30-m w-30-l mb1 mb0-m"
           />
         </form>
         <h4>Available asset links</h4>
@@ -84,14 +90,16 @@
             </a>
           </li>
         </ul>
-
+        <h4>URL format</h4>
+        <div class="f6 f5-m">
+          <code class="code wb-bw">https://gitreleases.dev/gh/{owner}/{repo}/{tag}/{assetname}</code>
+          <p><span class="code">{tag}</span> can be a real tag or "latest".</p>
+        </div>
       </main>
     </div>
-    <footer
-      class="mt5-ns mt3 bg-dark-accent light-shades pv4 flex-shrink-0"
-    >
-      <div class="w-80 ph5-ns center">
-        gitreleases made with ❤️ by
+    <footer class="bg-dark-accent light-shades pv3 flex-shrink-0">
+      <div class="w-100 w-80-l ph2 center ph5-l">
+        Git Releases made with ❤️ by
         <a
           href="https://twitter.com/weibelm"
           class="no-underline light-accent hover-dark-shades"

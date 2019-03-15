@@ -4,12 +4,6 @@ function updateText(elements, text) {
   });
 }
 
-function updateGitreleasesLink(elements, organization, repo, filename) {
-  elements.forEach(function(el) {
-    el.setAttribute("href", `/gh/${organization}/${repo}/latest/${filename}`);
-  });
-}
-
 function clearResults(resultsEl) {
   while (resultsEl.firstChild) {
     resultsEl.removeChild(resultsEl.firstChild);
@@ -41,19 +35,27 @@ function resetButton(btn) {
   btn.removeAttribute('disabled');
   btn.value = 'Search'
 }
+function clearInput(e) {
+  e.target.value = '';
+}
 
 function onDocumentLoad() {
   const inputOrganization = document.querySelector(".input-organization");
   const inputRepo = document.querySelector(".input-repo");
   const inputSubmit = document.querySelector('.input-submit');
-  const ghOrganizations = document.querySelectorAll(".gh-organization");
-  const ghRepo = document.querySelectorAll(".gh-repo");
-  const ghFilename = document.querySelectorAll(".gh-filename");
   const ghReleasesSearch = document.querySelector(".gh-releases-search");
   const ghReleasesResult = document.querySelector(".gh-releases-results");
 
+  inputOrganization.addEventListener("click", clearInput, {
+    once: true
+  })
+  inputRepo.addEventListener("click", clearInput, {
+    once: true
+  })
+
   ghReleasesSearch.addEventListener("submit", function(event) {
     event.preventDefault();
+    event.stopPropagation();
 
     setButtonLoading(inputSubmit)
 
@@ -99,21 +101,21 @@ function onDocumentLoad() {
         resetButton(inputSubmit)
         clearResults(ghReleasesResult);
 
-        const message = error.statusText || error.message;
+        let message = error.statusText || error.message;
+        if (message === 'Forbidden') {
+          message = `${message} - most likely means that you exceeded the hourly rate limit, sorry. Try constructing the URL on your own please :)`
+        }
         const li = document.createElement("li");
         li.appendChild(document.createTextNode(message));
         ghReleasesResult.appendChild(li);
       });
-  });
 
-  inputOrganization.addEventListener("keyup", function(event) {
-    const { value } = event.target;
-    updateText(ghOrganizations, value);
-  });
-  inputRepo.addEventListener("keyup", function(event) {
-    const { value } = event.target;
-    updateText(ghRepo, value);
+    return false;
   });
 }
 
-document.addEventListener("DOMContentLoaded", onDocumentLoad);
+if(document.readyState === 'loading') {
+  document.addEventListener("DOMContentLoaded", onDocumentLoad);
+} else {
+  onDocumentLoad();
+}

@@ -3,13 +3,16 @@ export TAG
 
 all: build-landingpage build
 
-install:
+install: install-go-deps install-npm
+install-go-deps:
+	go get -u github.com/rakyll/statik
+install-npm:
 	npm install --no-package-lock postcss-cli purgecss cssnano autoprefixer
 
 # -- Go related targets
 test:
 	go test ./...
-build: statik/statik.go gitreleases
+build:
 	go generate
 	go build -ldflags "-X main.version=$(TAG)" -o gitreleases .
 
@@ -31,11 +34,11 @@ public:
 	mkdir -p $@
 
 public/style.min.css: style.css
-	npx purgecss --css landingpage/style.css --content landingpage/index.html --out .
+	npx purgecss --css style.css --content landingpage/index.html --out .
 	npx postcss style.css -o $@
 	rm style.css
-style.css: landingpage/colors.css landingpage/tachyons.min.css
-	cat landingpage/colors.css landingpage/tachyons.min.css > $@
+style.css: landingpage/gitreleases.css landingpage/tachyons.min.css
+	cat landingpage/gitreleases.css landingpage/tachyons.min.css > $@
 
 public/%.html: landingpage/%.html
 	cp $< $@
@@ -44,4 +47,4 @@ public/%.js: landingpage/%.js
 	cp $< $@
 
 
-.PHONY: all install test build build-landingpage pack push apply-secret deploy ship
+.PHONY: all install install-go-deps install-npm test build build-landingpage pack push apply-secret deploy ship

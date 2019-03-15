@@ -1,14 +1,20 @@
 # Start by building the application.
 FROM golang:1.11 as build
 
-WORKDIR /go/src/gitreleases
+WORKDIR /src/gitreleases
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
 COPY . .
 
-RUN go get -d -v ./...
+RUN make install-go-deps
 RUN make build
 
 # Now copy it into our base image.
 FROM gcr.io/distroless/base
 
-COPY --from=build /go/src/gitreleases/gitreleases /
+COPY --from=build /src/gitreleases/gitreleases /
 CMD ["/gitreleases"]
