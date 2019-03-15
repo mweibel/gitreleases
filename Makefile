@@ -28,7 +28,7 @@ deploy:
 ship: test pack push deploy
 
 # -- Landingpage build
-build-landingpage: public/style.min.css public/index.html public/script.js public/headline.png public/headline@2x.png public/favicon.ico | public
+build-landingpage: public/style.min.css public/index.html public/script.js public/headline.png public/headline@2x.png public/logo.png public/favicon.ico | public
 
 public:
 	mkdir -p $@
