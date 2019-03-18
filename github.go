@@ -142,15 +142,16 @@ func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, 
 
 // FetchReleaseURL decides based on the supplied `tag` which GraphQL query is executed.
 func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, assetName string) (string, error) {
+	var err error
+
 	cacheKey := fmt.Sprintf("%s/%s/%s/%s", owner, repo, tag, assetName)
-	cached := gh.cache.Get(cacheKey)
-	if cached != "" {
-		return cached, nil
+	cached, err := gh.cache.Get(cacheKey)
+	if cached != "" || err != nil {
+		return cached, err
 	}
 
 	var assets releaseAssetNodes
 	var currLimit rateLimit
-	var err error
 	if tag == "latest" {
 		assets, currLimit, err = gh.fetchLatestRelease(ctx, owner, repo, assetName)
 	} else {
@@ -164,15 +165,17 @@ func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, a
 	}
 
 	if err != nil {
+		gh.cache.Put(cacheKey, "", err)
 		return "", err
 	}
 
 	if len(assets) == 0 {
+		gh.cache.Put(cacheKey, "", errAssetNotFound)
 		return "", errAssetNotFound
 	}
 
 	url := assets[0].DownloadUrl
-	gh.cache.Put(cacheKey, url)
+	gh.cache.Put(cacheKey, url, nil)
 
 	return url, nil
 }

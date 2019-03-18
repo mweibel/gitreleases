@@ -7,6 +7,7 @@ import (
 
 type item struct {
 	value      string
+	err        error
 	lastAccess int64
 }
 
@@ -37,21 +38,26 @@ func NewCache(ln int, maxTTL int, tickInterval time.Duration) (m *GitReleasesCac
 	return
 }
 
-func (m *GitReleasesCache) Put(k, v string) {
+// Put adds `v` using the key `k` to the cache. Error is optional and can be used to store an error in the cache for faster error lookups.
+func (m *GitReleasesCache) Put(k, v string, err error) {
 	m.l.Lock()
 	it, ok := m.items[k]
 	if !ok {
-		it = &item{value: v}
+		it = &item{value: v, err: err}
 		m.items[k] = it
 	}
 	it.lastAccess = time.Now().Unix()
 	m.l.Unlock()
 }
 
-func (m *GitReleasesCache) Get(k string) (v string) {
+// Get retrieves by key `k` the value. If `err` is non nil, this probably means an error has been cached explicitely.
+//
+// A not cached value is indicated using an empty string for `v` and a nil error.
+func (m *GitReleasesCache) Get(k string) (v string, err error) {
 	m.l.RLock()
 	if it, ok := m.items[k]; ok {
 		v = it.value
+		err = it.err
 		it.lastAccess = time.Now().Unix()
 	}
 	m.l.RUnlock()
