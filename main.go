@@ -60,8 +60,12 @@ func main() {
 
 	env := getEnv()
 
+	cacheTTL := 5 * time.Minute
+	tickerInterval := 10 * time.Minute
+	cache := NewCache(1000, int(cacheTTL.Seconds()), tickerInterval)
+
 	httpClient := NewOauthClient(context.Background(), env.token)
-	client := NewGitHubClient(githubGraphqlEndpoint, httpClient, logger.New("module", "gitreleases/github"))
+	client := NewGitHubClient(githubGraphqlEndpoint, httpClient, cache, logger.New("module", "gitreleases/github"))
 	apiServer := NewAPIServer(env.addr, env.metricsUsername, env.metricsPassword, version, client, logger.New("module", "gitreleases/api"))
 
 	// Catch SIGINT and SIGTERM.

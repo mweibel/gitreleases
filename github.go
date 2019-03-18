@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 
 type GithubClient struct {
 	httpClient *http.Client
+	cache      *GitReleasesCache
 	client     *githubv4.Client
 	logger     log.Logger
 }
@@ -140,6 +142,12 @@ func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, 
 
 // FetchReleaseURL decides based on the supplied `tag` which GraphQL query is executed.
 func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, assetName string) (string, error) {
+	cacheKey := fmt.Sprintf("%s/%s/%s/%s", owner, repo, tag, assetName)
+	cached := gh.cache.Get(cacheKey)
+	if cached != "" {
+		return cached, nil
+	}
+
 	var assets releaseAssetNodes
 	var currLimit rateLimit
 	var err error
@@ -163,7 +171,10 @@ func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, a
 		return "", errAssetNotFound
 	}
 
-	return assets[0].DownloadUrl, nil
+	url := assets[0].DownloadUrl
+	gh.cache.Put(cacheKey, url)
+
+	return url, nil
 }
 
 // NewOauthClient creates an oauth2 client with a static token source to use with GitHub's personal access tokens.
@@ -177,9 +188,10 @@ func NewOauthClient(ctx context.Context, token string) *http.Client {
 // NewGitHubClient creates a GithubClient "enterprise" instance using an established oauth2 HTTP client.
 //
 // The url and httpClient are parameters mainly for proper testing purposes.
-func NewGitHubClient(url string, httpClient *http.Client, logger log.Logger) *GithubClient {
+func NewGitHubClient(url string, httpClient *http.Client, cache *GitReleasesCache, logger log.Logger) *GithubClient {
 	gc := GithubClient{
 		httpClient: httpClient,
+		cache:      cache,
 		logger:     logger,
 	}
 
