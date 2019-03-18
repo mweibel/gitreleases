@@ -28,7 +28,7 @@ deploy:
 ship: test pack push deploy
 
 # -- Landingpage build
-build-landingpage: public/style.min.css public/index.html public/script.js public/img/headline.png public/img/headline@2x.png public/img/logo.png public/img/favicon.ico | public public/img
+build-landingpage: public/style.min.css index.html public/script.js public/img/headline.png public/img/headline@2x.png public/img/logo.png public/img/favicon.ico | public public/img
 
 public:
 	mkdir -p $@
@@ -42,8 +42,8 @@ public/style.min.css: style.css
 style.css: landingpage/gitreleases.css landingpage/tachyons.min.css
 	cat landingpage/gitreleases.css landingpage/tachyons.min.css > $@
 
-public/%.html: landingpage/%.html
-	cat $< | sed 's/{{TAG}}/$(TAG)/g' > $@
+index.html:
+	cat landingpage/index.html | sed 's/{{TAG}}/$(TAG)/g' > public/$@
 public/%.js: landingpage/%.js
 	cp $< $@
 public/img/%.png: landingpage/img/%.png
@@ -51,4 +51,4 @@ public/img/%.png: landingpage/img/%.png
 public/img/%.ico: landingpage/img/%.ico
 	cp $< $@
 
-.PHONY: all install install-go-deps install-npm test build build-landingpage pack push apply-secret deploy ship
+.PHONY: all install install-go-deps install-npm test build build-landingpage index.html pack push apply-secret deploy ship
