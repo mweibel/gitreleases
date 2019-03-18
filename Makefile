@@ -25,7 +25,7 @@ apply-secret:
 	kubectl apply -f k8s/secret.yml
 deploy:
 	./k8s/deploy.sh $(TAG)
-ship: test pack push deploy
+ship: build-landingpage test pack push deploy
 
 # -- Landingpage build
 build-landingpage: public/style.min.css index.html public/script.js public/img/headline.png public/img/headline@2x.png public/img/logo.png public/img/favicon.ico | public public/img
