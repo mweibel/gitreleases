@@ -24,7 +24,7 @@ push:
 apply-secret:
 	kubectl apply -f k8s/secret.yml
 deploy:
-	cat k8s/deployment.yml | sed 's/{{TAG}}/$(TAG)/g'| kubectl apply -f -
+	./k8s/deploy.sh $(TAG)
 ship: test pack push deploy
 
 # -- Landingpage build

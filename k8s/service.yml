@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: gitreleases
+    version: {{TAG}}
+  name: gitreleases
+  namespace: gitreleases
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: gitreleases
+    version: {{TAG}}
