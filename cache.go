@@ -11,6 +11,11 @@ type item struct {
 	lastAccess int64
 }
 
+type Cacher interface {
+	Put(k, v string, err error)
+	Get(k string) (v string, err error)
+}
+
 type GitReleasesCache struct {
 	items map[string]*item
 	l     sync.RWMutex

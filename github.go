@@ -16,7 +16,7 @@ import (
 
 type GithubClient struct {
 	httpClient *http.Client
-	cache      *GitReleasesCache
+	cache      Cacher
 	client     *githubv4.Client
 	logger     log.Logger
 }
@@ -191,7 +191,7 @@ func NewOauthClient(ctx context.Context, token string) *http.Client {
 // NewGitHubClient creates a GithubClient "enterprise" instance using an established oauth2 HTTP client.
 //
 // The url and httpClient are parameters mainly for proper testing purposes.
-func NewGitHubClient(url string, httpClient *http.Client, cache *GitReleasesCache, logger log.Logger) *GithubClient {
+func NewGitHubClient(url string, httpClient *http.Client, cache Cacher, logger log.Logger) *GithubClient {
 	gc := GithubClient{
 		httpClient: httpClient,
 		cache:      cache,

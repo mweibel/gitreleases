@@ -20,6 +20,14 @@ func discardLogger() log.Logger {
 	return logger
 }
 
+type NoopCache struct{}
+
+func (nc *NoopCache) Put(k, v string, err error) {
+}
+func (nc *NoopCache) Get(k string) (v string, err error) {
+	return "", nil
+}
+
 func testingHTTPClient(handler http.Handler) (*httptest.Server, func()) {
 	s := httptest.NewServer(handler)
 
@@ -74,7 +82,8 @@ func TestGithubClient_FetchReleaseURL_Latest(t *testing.T) {
 			httpServer, teardown := testingHTTPClient(h)
 			defer teardown()
 
-			gh := NewGitHubClient(httpServer.URL, http.DefaultClient, discardLogger())
+			cache := NoopCache{}
+			gh := NewGitHubClient(httpServer.URL, http.DefaultClient, &cache, discardLogger())
 
 			url, err := gh.FetchReleaseURL(context.Background(), "testing", "testing", "latest", "testing.zip")
 			if url != data.ReturnValue {
@@ -135,7 +144,8 @@ func TestGithubClient_FetchReleaseURL_Tag(t *testing.T) {
 			httpServer, teardown := testingHTTPClient(h)
 			defer teardown()
 
-			gh := NewGitHubClient(httpServer.URL, http.DefaultClient, discardLogger())
+			cache := NoopCache{}
+			gh := NewGitHubClient(httpServer.URL, http.DefaultClient, &cache, discardLogger())
 
 			url, err := gh.FetchReleaseURL(context.Background(), "testing", "testing", "sometag", "testing.zip")
 			if url != data.ReturnValue {
