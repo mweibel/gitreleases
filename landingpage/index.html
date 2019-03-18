@@ -75,15 +75,19 @@
           </ul>
           <h3>Enter a GitHub repo</h3>
           <form class="gh-releases-search w-100">
+            <div class="relative w-100 w-50-ns w-90-m">
+              <span class="fa fa-search absolute right-1 top-10px"></span>
+              <input
+                type="text"
+                placeholder="https://github.com/rokka-io/rokka-go"
+                class="input-repo input-reset ba br0 b--silver bg-light-shades pa2 pr4 w-100"
+                autocomplete="off"
+                autocapitalize="none"
+              />
+            </div>
             <input
-              type="text"
-              placeholder="https://github.com/rokka-io/rokka-go"
-              class="input-repo input-reset ba br0 br-0 b--silver bg-light-shades pa2 w-80 w-30-ns w-90-m"
-              autocomplete="off"
-            /><input
               type="submit"
-              value="🔎"
-              class="input-submit input-reset bl-0 br0 ba b--silver bg-light-shades pa2"
+              class="input-submit dn"
             />
           </form>
         </section>
@@ -111,6 +115,7 @@
         >
       </div>
     </footer>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <script async defer src="script.js?v={{TAG}}"></script>
     <script async defer src="https://buttons.github.io/buttons.js"></script>
   </body>

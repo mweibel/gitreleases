@@ -45,8 +45,8 @@
 .wb-bw {
   word-break: break-word;
 }
-.input-repo, .input-submit {
-  height: 40px;
+.top-10px{
+  top: 10px;
 }
 
 @media screen and (min-width: 120em) {
