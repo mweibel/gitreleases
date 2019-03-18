@@ -1,9 +1,3 @@
-function updateText(elements, text) {
-  elements.forEach(function(el) {
-    el.innerText = text;
-  });
-}
-
 function removeAllChildren(el) {
   while (el.firstChild) {
     el.removeChild(el.firstChild);
@@ -28,15 +22,12 @@ function createGitreleasesLink(path) {
 function setButtonLoading(btn) {
   btn.className += " gray";
   btn.setAttribute("disabled", true);
-  btn.value = "...";
+  btn.children[0].className = "fa fa-spin fa-spinner";
 }
 function resetButton(btn) {
   btn.classList.remove("gray");
   btn.removeAttribute("disabled");
-  btn.value = "🔎";
-}
-function clearInput(e) {
-  e.target.value = "";
+  btn.children[0].className = "fa fa-search";
 }
 
 function appendToListElement(el, list) {
@@ -50,6 +41,11 @@ function createErrorNode(message) {
   err.className = "red";
   err.appendChild(document.createTextNode(message));
   return err;
+}
+
+function setReleaseHeadingTitle(title, headingReleasesResult) {
+  removeAllChildren(headingReleasesResult);
+  headingReleasesResult.appendChild(document.createTextNode(title));
 }
 
 function onDocumentLoad() {
@@ -103,6 +99,9 @@ function onDocumentLoad() {
         return response.json();
       })
       .then(function(response) {
+        if (!response.length) {
+          return Promise.reject(new Error("No release found"));
+        }
         const release = filterReleases(response);
         return release.assets;
       })
@@ -112,10 +111,7 @@ function onDocumentLoad() {
         }
 
         removeAllChildren(ghReleasesResult);
-        removeAllChildren(headingReleasesResult);
-        headingReleasesResult.appendChild(
-          document.createTextNode("Available Asset URLs")
-        );
+        setReleaseHeadingTitle("Available Asset URLs", headingReleasesResult);
 
         assets.forEach(function(asset) {
           const path = `/gh/${organization}/${repo}/latest/${asset.name}`;
@@ -131,9 +127,13 @@ function onDocumentLoad() {
         resetButton(inputSubmit);
         removeAllChildren(ghReleasesResult);
 
+        setReleaseHeadingTitle("Error", headingReleasesResult);
+
         let message = error.statusText || error.message;
         if (message === "Forbidden") {
           message = `${message} - most likely means that you exceeded the hourly rate limit, sorry. Try constructing the URL on your own please :)`;
+        } else if (message === "Not Found") {
+          message = "Repository or organization not found";
         }
         appendToListElement(createErrorNode(message), ghReleasesResult);
       });
