@@ -51,6 +51,7 @@
 
 @media screen and (min-width: 120em) {
   .w-50-h {
+    /* yah I know, ugly :) */
     width: 50% !important;
   }
 }
