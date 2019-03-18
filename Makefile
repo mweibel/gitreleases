@@ -36,7 +36,7 @@ public/img:
 	mkdir -p $@
 
 public/style.min.css: style.css
-	npx purgecss --css style.css --content landingpage/index.html --out .
+	npx purgecss --css style.css --content landingpage/index.html landingpage/script.js --out .
 	npx postcss style.css -o $@
 	rm style.css
 style.css: landingpage/gitreleases.css landingpage/tachyons.min.css
