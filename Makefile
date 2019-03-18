@@ -43,7 +43,7 @@ style.css: landingpage/gitreleases.css landingpage/tachyons.min.css
 	cat landingpage/gitreleases.css landingpage/tachyons.min.css > $@
 
 public/%.html: landingpage/%.html
-	cp $< $@
+	cat $< | sed 's/{{TAG}}/$(TAG)/g' > $@
 public/%.js: landingpage/%.js
 	cp $< $@
 public/img/%.png: landingpage/img/%.png
