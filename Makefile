@@ -28,9 +28,11 @@ deploy:
 ship: test pack push deploy
 
 # -- Landingpage build
-build-landingpage: public/style.min.css public/index.html public/script.js public/headline.png public/headline@2x.png public/logo.png public/favicon.ico | public
+build-landingpage: public/style.min.css public/index.html public/script.js public/headline.png public/img/headline@2x.png public/img/logo.png public/img/favicon.ico | public public/img
 
 public:
+	mkdir -p $@
+public/img:
 	mkdir -p $@
 
 public/style.min.css: style.css
@@ -44,9 +46,9 @@ public/%.html: landingpage/%.html
 	cp $< $@
 public/%.js: landingpage/%.js
 	cp $< $@
-public/%.png: landingpage/%.png
+public/img/%.png: landingpage/img/%.png
 	cp $< $@
-public/%.ico: landingpage/%.ico
+public/img/%.ico: landingpage/img/%.ico
 	cp $< $@
 
 .PHONY: all install install-go-deps install-npm test build build-landingpage pack push apply-secret deploy ship

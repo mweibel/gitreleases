@@ -45,3 +45,9 @@
 .wb-bw {
   word-break: break-word;
 }
+
+@media screen and (min-width: 80em) {
+  .w-50-h {
+    width: 50% !important;
+  }
+}
