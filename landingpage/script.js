@@ -6,7 +6,7 @@ function removeAllChildren(el) {
 
 function filterReleases(response) {
   return response.slice(0, 5).find(function(release) {
-    return !!release.assets.length;
+    return release.assets && release.assets.length > 0;
   });
 }
 
@@ -103,6 +103,9 @@ function onDocumentLoad() {
           return Promise.reject(new Error("No release found"));
         }
         const release = filterReleases(response);
+        if (!release) {
+          return null;
+        }
         return release.assets;
       })
       .then(function(assets) {
