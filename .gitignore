@@ -24,3 +24,6 @@ landingpage/style.min.css
 
 # node
 node_modules/
+
+# other
+.envrc

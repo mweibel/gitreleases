@@ -1,25 +1,50 @@
+apiVersion: apps/v1
 kind: Deployment
-apiVersion: extensions/v1beta1
 metadata:
-  name: gitreleases-{{TAG}}
+  name: gitreleases
   namespace: gitreleases
+  labels:
+    app: gitreleases
 spec:
   replicas: 2
+  # rolling updates ensures that during a deployment the minmum number of pods is allways in ready state.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 30%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: gitreleases
   template:
     metadata:
       labels:
         app: gitreleases
-        version: {{TAG}}
+        version: "{{TAG}}"
       annotations:
         ad.datadoghq.com/gitreleases.check_names: '["prometheus"]'
-        ad.datadoghq.com/gitreleases.init_configs: '[{}]'
+        ad.datadoghq.com/gitreleases.init_configs: "[{}]"
         ad.datadoghq.com/gitreleases.instances: '[{"prometheus_url": "http://%%env_METRICS_USERNAME%%:%%env_METRICS_PASSWORD%%@%%host%%:%%port%%/metrics","namespace": "gitreleases","metrics": ["api_requests_*","go_*","in_flight_requests","process_*","promhttp_*","request_duration_*","response_size_*"]}]'
     spec:
       imagePullSecrets:
         - name: gitlab-auth
+      # If possible, don't schedule 2 pods of the same app on the same node.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gitreleases
       containers:
         - name: gitreleases
-          image: registry.gitlab.com/mweibel/gitreleases:{{TAG}}
+          image: "registry.gitlab.com/mweibel/gitreleases:{{TAG}}"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           livenessProbe:

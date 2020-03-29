@@ -12,3 +12,5 @@ require (
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f // indirect
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 )
+
+go 1.13

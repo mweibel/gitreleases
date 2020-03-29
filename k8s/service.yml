@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
   labels:
     app: gitreleases
-    version: {{TAG}}
+    version: "{{TAG}}"
   name: gitreleases
   namespace: gitreleases
 spec:
@@ -13,4 +13,4 @@ spec:
       targetPort: 8080
   selector:
     app: gitreleases
-    version: {{TAG}}
+    version: "{{TAG}}"
