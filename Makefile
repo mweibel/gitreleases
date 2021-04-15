@@ -20,12 +20,12 @@ build:
 pack:
 	docker build -t registry.gitlab.com/mweibel/gitreleases:$(TAG) .
 push:
-	docker push registry.gitlab.com/mweibel/gitreleases
+	docker push registry.gitlab.com/mweibel/gitreleases:$(TAG)
 apply-secret:
 	kubectl apply -f k8s/secret.yml
 deploy:
 	./k8s/deploy.sh $(TAG)
-ship: build-landingpage test pack push deploy
+ship: build-landingpage build test pack push deploy
 
 # -- Landingpage build
 build-landingpage: public/style.min.css index.html public/script.js public/img/headline.png public/img/headline@2x.png public/img/logo.png public/img/favicon.ico | public public/img
