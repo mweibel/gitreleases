@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gitreleases
@@ -16,6 +16,10 @@ spec:
     - host: gitreleases.dev
       http:
         paths:
-          - backend:
-              serviceName: gitreleases
-              servicePort: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gitreleases
+                port:
+                  name: http

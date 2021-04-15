@@ -5,7 +5,7 @@
 #
 
 DEPLOYMENT=$1
-#PREV_DEPLOYMENT=`kubectl get deployments -n gitreleases -o=jsonpath='{.items[0].metadata.name}'`
+PREV_DEPLOYMENT=`kubectl get deployments -n gitreleases -o=jsonpath='{.items[0].metadata.name}'`
 cat k8s/deployment.yml | sed 's/{{TAG}}/'${DEPLOYMENT}'/g'| kubectl apply -f -
 
 # Wait until the Deployment is ready by checking the MinimumReplicasAvailable condition.
@@ -18,4 +18,4 @@ done
 
 cat k8s/service.yml | sed 's/{{TAG}}/'${DEPLOYMENT}'/g'| kubectl apply -f -
 
-#kubectl delete deployment -n gitreleases $PREV_DEPLOYMENT
+kubectl delete deployment -n gitreleases $PREV_DEPLOYMENT
