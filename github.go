@@ -32,25 +32,24 @@ type releaseAssetNodes []struct {
 	DownloadUrl string
 }
 
+type release struct {
+	ReleaseAssets struct {
+		TotalCount int
+		Nodes      releaseAssetNodes
+	} `graphql:"releaseAssets(name: $assetName, first:1)"`
+	TagName string
+}
+
 type fetchSpecificTag struct {
 	Repository struct {
-		Release *struct {
-			ReleaseAssets struct {
-				Nodes releaseAssetNodes
-			} `graphql:"releaseAssets(name: $assetName, first:1)"`
-		} `graphql:"release(tagName: $tag)"`
+		Release *release `graphql:"release(tagName: $tag)"`
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 	RateLimit rateLimit
 }
 type fetchLatestRelease struct {
 	Repository struct {
 		Releases struct {
-			Nodes []struct {
-				ReleaseAssets struct {
-					TotalCount int
-					Nodes      releaseAssetNodes
-				} `graphql:"releaseAssets(name: $assetName, first:1)"`
-			}
+			Nodes []*release
 		} `graphql:"releases(first: 5, orderBy: {direction: DESC, field: CREATED_AT})"`
 	} `graphql:"repository(owner: $owner, name: $repo)"`
 	RateLimit rateLimit
@@ -62,6 +61,18 @@ const (
 	TypeNotFound GitHubErrorType = iota
 	TypeServerError
 )
+
+const zipArchive = "ziparchive"
+const targzArchive = "targzarchive"
+
+var archiveToExt = map[string]string{
+	zipArchive:   "zip",
+	targzArchive: "tar.gz",
+}
+
+func isArchive(assetName string) bool {
+	return assetName == zipArchive || assetName == targzArchive
+}
 
 type GitHubError struct {
 	WrappedError error
@@ -91,7 +102,7 @@ func parseGraphqlError(err error) GitHubError {
 	return GitHubError{err, TypeServerError}
 }
 
-func (gh *GithubClient) fetchLatestRelease(ctx context.Context, owner, repo, assetName string) (releaseAssetNodes, rateLimit, error) {
+func (gh *GithubClient) fetchLatestRelease(ctx context.Context, owner, repo, assetName string) (*release, rateLimit, error) {
 	q := fetchLatestRelease{}
 	variables := map[string]interface{}{
 		"owner":     githubv4.String(owner),
@@ -109,15 +120,18 @@ func (gh *GithubClient) fetchLatestRelease(ctx context.Context, owner, repo, ass
 		return nil, q.RateLimit, errReleaseNotFound
 	}
 	for _, node := range releases {
+		if isArchive(assetName) {
+			return node, q.RateLimit, nil
+		}
 		if node.ReleaseAssets.TotalCount > 0 {
-			return node.ReleaseAssets.Nodes, q.RateLimit, nil
+			return node, q.RateLimit, nil
 		}
 	}
 
 	return nil, q.RateLimit, errAssetNotFound
 }
 
-func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, assetName string) (releaseAssetNodes, rateLimit, error) {
+func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, assetName string) (*release, rateLimit, error) {
 	q := fetchSpecificTag{}
 	variables := map[string]interface{}{
 		"owner":     githubv4.String(owner),
@@ -135,9 +149,7 @@ func (gh *GithubClient) fetchSpecificTag(ctx context.Context, owner, repo, tag, 
 	if release == nil {
 		return nil, q.RateLimit, errReleaseNotFound
 	}
-	assets := release.ReleaseAssets.Nodes
-
-	return assets, q.RateLimit, nil
+	return release, q.RateLimit, nil
 }
 
 // FetchReleaseURL decides based on the supplied `tag` which GraphQL query is executed.
@@ -150,12 +162,12 @@ func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, a
 		return cached, err
 	}
 
-	var assets releaseAssetNodes
+	var r *release
 	var currLimit rateLimit
 	if tag == "latest" {
-		assets, currLimit, err = gh.fetchLatestRelease(ctx, owner, repo, assetName)
+		r, currLimit, err = gh.fetchLatestRelease(ctx, owner, repo, assetName)
 	} else {
-		assets, currLimit, err = gh.fetchSpecificTag(ctx, owner, repo, tag, assetName)
+		r, currLimit, err = gh.fetchSpecificTag(ctx, owner, repo, tag, assetName)
 	}
 
 	if currLimit.Limit > 0 && currLimit.Remaining < 50 {
@@ -169,12 +181,15 @@ func (gh *GithubClient) FetchReleaseURL(ctx context.Context, owner, repo, tag, a
 		return "", err
 	}
 
-	if len(assets) == 0 {
+	var url string
+	if isArchive(assetName) {
+		url = fmt.Sprintf("https://github.com/%s/%s/archive/%s.%s", owner, repo, r.TagName, archiveToExt[assetName])
+	} else if len(r.ReleaseAssets.Nodes) > 0 {
+		url = r.ReleaseAssets.Nodes[0].DownloadUrl
+	} else {
 		gh.cache.Put(cacheKey, "", errAssetNotFound)
 		return "", errAssetNotFound
 	}
-
-	url := assets[0].DownloadUrl
 	gh.cache.Put(cacheKey, url, nil)
 
 	return url, nil

@@ -35,33 +35,51 @@ func testingHTTPClient(handler http.Handler) (*httptest.Server, func()) {
 }
 
 var fetchReleaseURLResponsesLatest = map[string]struct {
+	AssetName   string
 	FileName    string
 	ReturnValue string
 	ReturnError error
 }{
 	"owner not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_owner_not_found.json",
 		ReturnValue: "",
 		ReturnError: errors.New("Could not resolve to a User with the username 'testing'."),
 	},
 	"repo not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_repo_not_found.json",
 		ReturnValue: "",
 		ReturnError: errors.New("Could not resolve to a Repository with the name 'testing'."),
 	},
 	"release not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_release_not_found_latest.json",
 		ReturnValue: "",
 		ReturnError: errReleaseNotFound,
 	},
 	"asset not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_asset_not_found_latest.json",
 		ReturnValue: "",
 		ReturnError: errAssetNotFound,
 	},
 	"asset found": {
+		AssetName:   "testing.zip",
 		FileName:    "ok_asset_found_latest.json",
 		ReturnValue: "https://example.com/testing/testing/releases/download/latest/testing.zip",
+		ReturnError: nil,
+	},
+	"ziparchive found": {
+		AssetName:   "ziparchive",
+		FileName:    "ok_asset_found_archive.json",
+		ReturnValue: "https://github.com/testing/testing/archive/1.1.0.zip",
+		ReturnError: nil,
+	},
+	"targzarchive found": {
+		AssetName:   "targzarchive",
+		FileName:    "ok_asset_found_archive.json",
+		ReturnValue: "https://github.com/testing/testing/archive/1.1.0.tar.gz",
 		ReturnError: nil,
 	},
 }
@@ -85,7 +103,7 @@ func TestGithubClient_FetchReleaseURL_Latest(t *testing.T) {
 			cache := NoopCache{}
 			gh := NewGitHubClient(httpServer.URL, http.DefaultClient, &cache, discardLogger())
 
-			url, err := gh.FetchReleaseURL(context.Background(), "testing", "testing", "latest", "testing.zip")
+			url, err := gh.FetchReleaseURL(context.Background(), "testing", "testing", "latest", data.AssetName)
 			if url != data.ReturnValue {
 				t.Errorf("url does not match. Expected: '%s', got '%s'", data.ReturnValue, url)
 			}
@@ -97,33 +115,51 @@ func TestGithubClient_FetchReleaseURL_Latest(t *testing.T) {
 }
 
 var fetchReleaseURLResponsesTag = map[string]struct {
+	AssetName   string
 	FileName    string
 	ReturnValue string
 	ReturnError error
 }{
 	"owner not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_owner_not_found.json",
 		ReturnValue: "",
 		ReturnError: errors.New("Could not resolve to a User with the username 'testing'."),
 	},
 	"repo not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_repo_not_found.json",
 		ReturnValue: "",
 		ReturnError: errors.New("Could not resolve to a Repository with the name 'testing'."),
 	},
 	"release not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_release_not_found_tag.json",
 		ReturnValue: "",
 		ReturnError: errReleaseNotFound,
 	},
 	"asset not found": {
+		AssetName:   "testing.zip",
 		FileName:    "error_asset_not_found_tag.json",
 		ReturnValue: "",
 		ReturnError: errAssetNotFound,
 	},
 	"asset found": {
+		AssetName:   "testing.zip",
 		FileName:    "ok_asset_found_tag.json",
 		ReturnValue: "https://example.com/testing/testing/releases/download/sometag/testing.zip",
+		ReturnError: nil,
+	},
+	"ziparchive found": {
+		AssetName:   "ziparchive",
+		FileName:    "ok_asset_found_tag.json",
+		ReturnValue: "https://github.com/testing/testing/archive/sometag.zip",
+		ReturnError: nil,
+	},
+	"targzarchive found": {
+		AssetName:   "targzarchive",
+		FileName:    "ok_asset_found_tag.json",
+		ReturnValue: "https://github.com/testing/testing/archive/sometag.tar.gz",
 		ReturnError: nil,
 	},
 }
@@ -147,7 +183,7 @@ func TestGithubClient_FetchReleaseURL_Tag(t *testing.T) {
 			cache := NoopCache{}
 			gh := NewGitHubClient(httpServer.URL, http.DefaultClient, &cache, discardLogger())
 
-			url, err := gh.FetchReleaseURL(context.Background(), "testing", "testing", "sometag", "testing.zip")
+			url, err := gh.FetchReleaseURL(context.Background(), "testing", "testing", "sometag", data.AssetName)
 			if url != data.ReturnValue {
 				t.Errorf("url does not match. Expected: '%s', got '%s'", data.ReturnValue, url)
 			}

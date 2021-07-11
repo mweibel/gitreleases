@@ -116,6 +116,8 @@ function onDocumentLoad() {
         removeAllChildren(ghReleasesResult);
         setReleaseHeadingTitle("Available Asset URLs", headingReleasesResult);
 
+        assets.push({name: 'ziparchive'}, {name: 'targzarchive'});
+
         assets.forEach(function(asset) {
           const path = `/gh/${organization}/${repo}/latest/${asset.name}`;
           const li = document.createElement("li");
