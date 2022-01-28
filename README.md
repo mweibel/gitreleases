@@ -2,6 +2,10 @@
 
 Git Releases allows you to directly link to the assets of your latest release on GitHub.
 
+## Deprecation notice
+
+gitreleases.dev will be shut down soon. Use [GitHub direct links](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases) instead.
+
 ## Contributions
 
 For any significant change, please open an issue first to discuss it. 
